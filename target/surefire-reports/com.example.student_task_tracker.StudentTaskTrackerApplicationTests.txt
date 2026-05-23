@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.student_task_tracker.StudentTaskTrackerApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.422 s -- in com.example.student_task_tracker.StudentTaskTrackerApplicationTests
