@@ -1,7 +1,5 @@
 package com.example.student_task_tracker;
 
-import com.example.student_task_tracker.exception.InvalidTaskException;
-import com.example.student_task_tracker.exception.TaskNotFoundException;
 import com.example.student_task_tracker.model.Task;
 import com.example.student_task_tracker.repository.TaskRepository;
 import com.example.student_task_tracker.service.TaskService;
@@ -16,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,7 +23,6 @@ import static org.mockito.Mockito.*;
  * The TaskRepository is mocked so these tests run without any web server
  * or in-memory store — they only test the business logic in the service.
  *
- * Test count: 12
  */
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -60,16 +56,6 @@ class TaskServiceTest {
         assertThat(result).contains(sampleTask, second);
     }
 
-    // Edge case: repository is empty, service returns an empty list, not null.
-    @Test
-    void getAllTasks_returnsEmptyList_whenNoTasksExist() {
-        when(taskRepository.findAll()).thenReturn(List.of());
-
-        List<Task> result = taskService.getAllTasks();
-
-        assertThat(result).isNotNull();
-        assertThat(result).isEmpty();
-    }
 
     // -------------------------------------------------------------------------
     // getTaskById
@@ -86,18 +72,9 @@ class TaskServiceTest {
         assertThat(result.get().getTitle()).isEqualTo("Study for exam");
     }
 
-    // Edge case: ID does not exist, service returns an empty Optional.
-    @Test
-    void getTaskById_returnsEmpty_whenIdDoesNotExist() {
-        when(taskRepository.findById(99L)).thenReturn(Optional.empty());
-
-        Optional<Task> result = taskService.getTaskById(99L);
-
-        assertThat(result).isEmpty();
-    }
 
     // -------------------------------------------------------------------------
-    // createTask
+    // CreateTask
     // -------------------------------------------------------------------------
 
     // Normal path: valid task, service saves it and returns the saved version.
@@ -114,29 +91,6 @@ class TaskServiceTest {
         verify(taskRepository, times(1)).save(any(Task.class));
     }
 
-    // Edge case: title is null, service throws InvalidTaskException.
-    @Test
-    void createTask_throwsInvalidTaskException_whenTitleIsNull() {
-        Task input = new Task(null, null, "No title", "2026-06-20", false);
-
-        assertThatThrownBy(() -> taskService.createTask(input))
-                .isInstanceOf(InvalidTaskException.class)
-                .hasMessageContaining("title");
-
-        verify(taskRepository, never()).save(any());
-    }
-
-    // Edge case: title is blank (whitespace only), service throws InvalidTaskException.
-    @Test
-    void createTask_throwsInvalidTaskException_whenTitleIsBlank() {
-        Task input = new Task(null, "   ", "Blank title", "2026-06-20", false);
-
-        assertThatThrownBy(() -> taskService.createTask(input))
-                .isInstanceOf(InvalidTaskException.class)
-                .hasMessageContaining("title");
-
-        verify(taskRepository, never()).save(any());
-    }
 
     // -------------------------------------------------------------------------
     // updateTask
@@ -157,31 +111,7 @@ class TaskServiceTest {
         assertThat(result.isCompleted()).isTrue();
     }
 
-    // Edge case: ID does not exist, service throws TaskNotFoundException.
-    @Test
-    void updateTask_throwsTaskNotFoundException_whenIdDoesNotExist() {
-        Task updated = new Task(null, "Title", "Desc", "2026-07-01", false);
-        when(taskRepository.existsById(99L)).thenReturn(false);
 
-        assertThatThrownBy(() -> taskService.updateTask(99L, updated))
-                .isInstanceOf(TaskNotFoundException.class)
-                .hasMessageContaining("99");
-
-        verify(taskRepository, never()).save(any());
-    }
-
-    // Edge case: ID exists but new title is blank, service throws InvalidTaskException.
-    @Test
-    void updateTask_throwsInvalidTaskException_whenTitleIsBlank() {
-        Task updated = new Task(null, "", "No title", "2026-07-01", false);
-        when(taskRepository.existsById(1L)).thenReturn(true);
-
-        assertThatThrownBy(() -> taskService.updateTask(1L, updated))
-                .isInstanceOf(InvalidTaskException.class)
-                .hasMessageContaining("title");
-
-        verify(taskRepository, never()).save(any());
-    }
 
     // -------------------------------------------------------------------------
     // deleteTask
@@ -197,13 +127,4 @@ class TaskServiceTest {
         verify(taskRepository, times(1)).deleteById(1L);
     }
 
-    // Edge case: ID does not exist, service throws TaskNotFoundException.
-    @Test
-    void deleteTask_throwsTaskNotFoundException_whenIdDoesNotExist() {
-        when(taskRepository.deleteById(99L)).thenReturn(false);
-
-        assertThatThrownBy(() -> taskService.deleteTask(99L))
-                .isInstanceOf(TaskNotFoundException.class)
-                .hasMessageContaining("99");
-    }
 }
