@@ -120,7 +120,11 @@ class TaskServiceTest {
     // Normal path: ID exists, repository delete is called once.
     @Test
     void deleteTask_deletesSuccessfully_whenIdExists() {
-       )).deleteById(1L);
+        when(taskRepository.deleteById(1L)).thenReturn(true);
+
+        taskService.deleteTask(1L);
+
+        verify(taskRepository, times(1)).deleteById(1L);
     }
 
 }
